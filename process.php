@@ -7,14 +7,8 @@ switch($post_function) {
 
     case('setUser'):
         $_SESSION['user'] = $_POST['user'];
+        $_SESSION['state'] = count(file('data/log.txt'));
         break;
-
-/*    case('getState'):
-        if (file_exists('data/log.txt')) {
-            $lines = file('data/log.txt');
-        }
-        $log['state'] = $_SESSION['state'] = count($lines); 
-        break;  */
 
     // update chat messages
     case('update'):
@@ -22,6 +16,7 @@ switch($post_function) {
             $lines = file('data/log.txt');
         }
         $count =  count($lines);
+  
         $state = $_SESSION['state'];
 
         if ($state == $count){
