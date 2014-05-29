@@ -1,17 +1,24 @@
 <html>
-  <head>
-    <title>Chat room</title>
-    <link type="text/css" rel="stylesheet" href="css/bootstrap.css">
-    <link type="text/css" rel="stylesheet" href="css/main.css">
-  </head>
+  <?php
+    require_once("header.php")
+  ?>
   
   <body class="container">
-    <h3>My tiny chat room :)</h3>
-    <br/>
+    <h3>Tiny chat room</h3>
     
     <!-- page -->
     <div class="container" id="page-wrap">
-      <div id="name-area">Welcome</div>
+
+      <?php
+        if (isset($_SESSION['user'])) {
+          $user = $_SESSION['user'];
+          echo "<div id='name-area'>Welcome, <b id='user_name'>$user</b> <a href=# onclick='setName()';>(change)</a></div>";
+        }
+        else {
+         echo "<div id='name-area'>Welcome</div>";
+        }
+      ?>
+      
       <div id="chatbox"></div>
       <br/>
       <form id="message-area">

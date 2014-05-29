@@ -1,50 +1,59 @@
 var busy = false;
-var file = "chat.txt";
 
 function Chat() {
+  this.user = setUser;
   this.update = updateChat;
   this.send = sendChat;
   this.getState = getStateOfChat;
 }
 
+// set user name
+function setUser(name) {
+  $.ajax({
+    type: "POST",
+    url: "process.php",
+    data: {'function': 'setUser', 'user': name},
+    dataType: "json",
+    success: function(data) {busy = false;},
+  });
+}
+
 //gets the state of the chat
 function getStateOfChat() {
-  if(!busy){
-    busy = true;
-    $.ajax({
-      type: "POST",
-      url: "process.php",
-      data: {'function': 'getState', 'file': file},
-      dataType: "json",	
-      success: function(data) {state = data.state; busy = false;}
-    });
-  }	
+  busy = true;
+  $.ajax({
+    type: "POST",
+    url: "process.php",
+    data: {'function': 'getState'},
+    dataType: "json",	
+    success: function(data) {state = data.state; busy = false;}
+  });	
 }
 
 //update the chat
 function updateChat() {
-  if (!busy) {
+  if(!busy){
     busy = true;
     $.ajax({
-      type: "POST",
-      url: "process.php",
-      data: {'function': 'update', 'state': state, 'file': file},
-      dataType: 'json',
-      success: function(data) {
-        if (data.text) {
-          for (var i = 0; i < data.text.length; i++) {
-            $('#chatbox').append("<div>" + data.text[i] + "</div>");
+        type: "POST",
+        url: "process.php",
+        data: {'function': 'update'},
+        dataType: 'json',
+        success: function(data) {
+          if (data.text) {
+            for (var i = 0; i < data.text.length; i++) {
+              $('#chatbox').append("<div>" + data.text[i] + "</div>");
+            }
+
+            document.getElementById('chatbox').scrollTop = document.getElementById('chatbox').scrollHeight;
           }
-        
-          document.getElementById('chatbox').scrollTop = document.getElementById('chatbox').scrollHeight;
+          busy = false;
+          state = data.state;
         }
-        busy = false;
-        state = data.state;
-      }
-    });
+      });
   }
   else {
-    //setTimeout(updateChat, 1500);
+    setTimeout(updateChat, 1500);
   }
 }
 
@@ -55,7 +64,7 @@ function sendChat(message, nickname) {
 	$.ajax({
 		type: "POST",
 		url: "process.php",
-		data: {'function': 'send','message': message,'nickname': nickname,'file': file},
+		data: {'function': 'send','message': message,'nickname': nickname},
 		dataType: "json",
 		success: function(data){
 			updateChat();
@@ -67,7 +76,6 @@ function sendChat(message, nickname) {
 // kick off chat
 var chat = new Chat();
 var name = "";
-
 
 // send text  
 function sendText() {
@@ -86,8 +94,8 @@ function sendText() {
   }  
 }
 
-
-window.onload = function() {
+// Set user name
+function setName() {
   // ask user for name with popup prompt    
   name = prompt("Enter your chat name:", "Guest");
 
@@ -95,13 +103,22 @@ window.onload = function() {
   if (!name || name === ' ') {
     name = "Guest";  
   }
-  $('#name-area').html('Welcome, <b>' + name + '</b>');
+  $('#name-area').html('Welcome, <b id="user_name">' + name + '</b> <a href=# onclick="setName()";>(change)</a>');
+  chat.user(name);
+}
+
+window.onload = function() {
+  // get user name
+  if($('#name-area').html() == 'Welcome')
+    setName();
+  else
+    name = $('#user_name').html();
 
   // set update interval
   setInterval(chat.update, 1000);
 
   $(function() {
-    chat.getState(); 
+    //chat.getState(); 
 
     // watch textarea for key presses
     $("#sendie").keydown(function(event) {  
